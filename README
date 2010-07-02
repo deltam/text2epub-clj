@@ -1,0 +1,18 @@
+# text2epub
+
+convert plain text into .epub
+
+## Usage
+
+lein uberjar
+java -jar text2epub-standalone.jar input.txt output.epub epub_title
+
+(input.txt, encoding UTF-8)
+
+## Installation
+
+FIXME: write
+
+## License
+
+FIXME: write

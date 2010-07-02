@@ -2,6 +2,10 @@
 
 convert plain text into .epub
 
+cheking of operation
+  iBooks 
+  Stanza http://www.lexcycle.com/
+
 ## Usage
 
 lein uberjar

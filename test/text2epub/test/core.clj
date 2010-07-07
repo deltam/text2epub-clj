@@ -1,4 +1,4 @@
-(ns text2epub.core-test
+(ns text2epub.test.core
   (:use [text2epub.core] :reload-all)
   (:use [clojure.test]))
 

@@ -9,7 +9,7 @@ cheking of operation
 ## Usage
 
 lein uberjar
-java -jar text2epub-standalone.jar input.txt output.epub epub_title
+java -jar text2epub-clj-standalone.jar input.txt output.epub epub_title
 
 (input.txt, encoding UTF-8)
 

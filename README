@@ -2,9 +2,10 @@
 
 convert plain text into .epub
 
-cheking of operation
+cheking of opening .epub
   iBooks 
   Stanza http://www.lexcycle.com/
+
 
 ## Usage
 
@@ -13,9 +14,6 @@ java -jar text2epub-clj-standalone.jar input.txt output.epub epub_title
 
 (input.txt, encoding UTF-8)
 
-## Installation
-
-FIXME: write
 
 ## License
 

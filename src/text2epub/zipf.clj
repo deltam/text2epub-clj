@@ -1,12 +1,13 @@
 ; zip file output
 
 (ns text2epub.zipf
-  (:use [text2epub epub])
   (:import [java.util.zip ZipEntry ZipOutputStream CRC32]
            [java.io InputStreamReader FileOutputStream FileInputStream]))
 
 
-(defn open-zip [f]
+(defn open-zip
+  "open ZipOutputStream" 
+  [f]
   (ZipOutputStream. (FileOutputStream. f)))
 
 
@@ -21,7 +22,7 @@
     (. crc update buf)
     (. ze setCrc (. crc getValue))
     (. zos putNextEntry ze)
-    (. zos write buf)
+    (. zos write buf 0 count)
     (. zos closeEntry)))
 
 
@@ -43,7 +44,7 @@
   (. zos putNextEntry (ZipEntry. f))
   (let [fis (InputStreamReader. (FileInputStream. f) "UTF-8")
         buf (char-array 1024)]
-    (loop [count (.fis read buf 0 1024)]
+    (loop [count (. fis read buf 0 1024)]
       (if (not (= count -1))
         (let [s (String. buf 0 count)
               b (. s getBytes "UTF-8")
@@ -55,10 +56,8 @@
     (. zos closeEntry)))
 
   
-(defn to-zip [f]
-  (let [zos (ZipOutputStream. (FileOutputStream. f))
-        metaf ["META-INF/container.xml" "content.opf" "toc.ncx"]
-        secf  ["section01.xhtml"]]
+(defn to-zip [f metaf secf]
+  (let [zos (open-zip f)]
     ; 非圧縮
 ;    (add-store-file zos "mimetype")
     (. zos setMethod ZipOutputStream/STORED)
@@ -71,33 +70,11 @@
       (. zos putNextEntry ze)
       (. zos write data)
       (. zos closeEntry))
-   ; 圧縮
-    (. zos setMethod ZipOutputStream/DEFLATED)
+    ; 圧縮
     ; metadata
     (doseq [f metaf]
-      (. zos putNextEntry (ZipEntry. f))
-      (let [fis (FileInputStream. f)
-            buf (byte-array 1024)]
-        (loop [count (. fis read buf 0 1024)]
-          (if (not (= count -1))
-            (. zos write buf 0 count))
-          (if (= count -1)
-            nil
-            (recur (. fis read buf 0 1024)))))
-      (. zos closeEntry))
+      (add-deflated-file zos f))
     ; text data
     (doseq [f secf]
-      (. zos putNextEntry (ZipEntry. f))
-      (let [fis (InputStreamReader. (FileInputStream. f) "UTF-8")
-            buf (char-array 1024)]
-         (loop [count (. fis read buf 0 1024)]
-            (if (not (= count -1))
-              (let [s (String. buf 0 count)
-                    b (. s getBytes "UTF-8")
-                    len (alength b)]
-                (. zos write b 0 len)))
-            (if (= count -1)
-              nil
-              (recur (. fis read buf 0 1024)))))
-      (. zos closeEntry))
+      (add-text-file zos f))
     (. zos close)))

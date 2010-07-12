@@ -1,4 +1,4 @@
-# text2epub
+# text2epub-clj
 
 convert plain text into .epub, wriiten by Clojure.
 
@@ -9,8 +9,8 @@ cheking of opening .epub
 
 ## Usage
 
-lein uberjar
-java -jar text2epub-clj-standalone.jar input.txt output.epub epub_title
+$ lein uberjar
+$ java -jar text2epub-clj-standalone.jar input.txt output.epub epub_title
 
 (input.txt, encoding UTF-8)
 

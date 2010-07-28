@@ -5,10 +5,10 @@
 
 
 ; main
-; usage: CMD text.txt text.epub epub_title
+; usage: CMD output.epub epub_title <textfile>..
 (defn -main [& args]
-  (let [files (take 3 args)
-        text_name (first files)
-        epub_name (second files)
-        epub_title (last files)]
-    (gen-epub epub_name epub_title [text_name])))
+  (let [temp       (take 2 args)
+        epub-name  (first temp)
+        epub-title (second temp)
+        texts      (drop 2 args)]
+    (gen-epub epub-name epub-title texts)))

@@ -1,6 +1,7 @@
 ; make epub metadata
 (ns text2epub.epub
-  (:use [clojure.contrib.duck-streams :only (reader writer file-str)]
+  (:use [text2epub zipf]
+        [clojure.contrib.duck-streams :only (reader writer file-str)]
         [hiccup.core]))
 
 
@@ -72,9 +73,6 @@
 
 (defn to-epub-text [filename text_name]
   (with-open [r (reader filename) w (writer text_name)]
-    (let [text (reduce str (for [line (line-seq r)] line))
-          valid-text (.. text (replaceAll "<br>" "<br/>")
-                              (replaceAll "<img([^>]*)>" "<img$1/>"))]
     (.write w
             (str "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
                  "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
@@ -85,4 +83,19 @@
                         [:body
                          (for [line (line-seq r)]
                            [:p line])
-                         ]]))))))
+                         ]])))))
+
+
+(defn gen-epub [epub-name epub-title text-files]
+  (let [id       (str (. java.util.UUID randomUUID))
+        htmls    (map #(.replaceAll % "\\..+$" ".html") text-files)
+        sections (map #(.replaceAll % "\\..+$" "") text-files)]
+    (mimetype)
+    (make-meta-inf)
+    (out-content-opf epub-title id htmls sections)
+    (out-ncx id sections)
+    (doseq [fs sections]
+      (to-epub-text (str fs ".txt") (str fs ".html")))
+    (to-zip epub-name
+            ["META-INF/container.xml" "content.opf" "toc.ncx"]
+            htmls)))

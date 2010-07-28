@@ -26,7 +26,7 @@
                         [:rootfile {:full-path "content.opf" :media-type "application/oebps-package+xml"}]]])))))
 
 
-(defn out-content-opf [title id section_name]
+(defn out-content-opf [title id section_files section_titles]
   (file-write "content.opf"
               (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                    (html
@@ -41,12 +41,16 @@
                       [:dc:identifier {:id "BookID"} id]]
                      [:manifest
                       [:item {:id "ncx" :href "toc.ncx" :media-type "application/x-dtbncx+xml"}]
-                      [:item {:id section_name :href section_name :media-type "application/xhtml+xml"}]]
+                      (for [s section_titles]; todo
+                        [:item {:id s :href (str s ".html") :media-type "application/xhtml+xml"}])
+                      ]
                      [:spine {:toc "ncx"}
-                      [:itemref {:idref section_name}]]]))))
+                      (for [s section_titles]
+                        [:itemref {:idref s}])
+                      ]]))))
 
 
-(defn out-ncx [id section_names]
+(defn out-ncx [id section_titles]
   (file-write "toc.ncx"
               (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                    "<!DOCTYPE ncx PUBLIC \"-//NISO//DTD ncx 2005-1//EN\" \"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd\">"
@@ -58,15 +62,19 @@
                       [:meta {:content "1" :name "dtb:depth"}]
                       [:meta {:content "0" :name "dtb:maxPageNumber"}]]
                      [:navMap
-                      (for [sec section_names]
-                        [:navPoint {:id sec :playOrder "1"}
+                      (for [sec section_titles]
+                        [:navPoint {:id sec :playOrder (str (count (take-while #(not (= sec %)) section_titles)))}
                          [:navLabel
                           [:text sec]]
-                         [:content {:src sec}]])]]))))
+                         [:content {:src (str sec ".html")}]])
+                      ]]))))
 
 
 (defn to-epub-text [filename text_name]
   (with-open [r (reader filename) w (writer text_name)]
+    (let [text (reduce str (for [line (line-seq r)] line))
+          valid-text (.. text (replaceAll "<br>" "<br/>")
+                              (replaceAll "<img([^>]*)>" "<img$1/>"))]
     (.write w
             (str "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
                  "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
@@ -76,4 +84,5 @@
                          [:meta {:http-equiv "Content-Type" :content "application/xhtml+xml; charset=utf-8"}]]
                         [:body
                          (for [line (line-seq r)]
-                           [:p line])]])))))
+                           [:p line])
+                         ]]))))))

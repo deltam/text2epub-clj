@@ -11,13 +11,14 @@
         text_name (first files)
         epub_name (second files)
         epub_title (last files)
-        html_name "section01.xhtml"
+        sec_title ["section01"]
+        html_name (map #(str % ".html") sec_title)
         id (str (. java.util.UUID randomUUID))]
     (mimetype)
     (make-meta-inf)
-    (out-content-opf epub_title id html_name)
-    (out-ncx id [html_name])
-    (to-epub-text text_name html_name)
+    (out-content-opf epub_title id html_name sec_title)
+    (out-ncx id html_name)
+    (to-epub-text text_name (first html_name))
     (to-zip epub_name
             ["META-INF/container.xml" "content.opf" "toc.ncx"]
-            ["section01.xhtml"])))
+            html_name)))

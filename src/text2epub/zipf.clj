@@ -2,7 +2,10 @@
 
 (ns text2epub.zipf
   (:import [java.util.zip ZipEntry ZipOutputStream CRC32]
-           [java.io InputStreamReader FileOutputStream FileInputStream]))
+           [java.io InputStreamReader
+                    ByteArrayInputStream
+                    FileOutputStream
+                    FileInputStream]))
 
 
 (defn open-zip
@@ -10,14 +13,47 @@
   [f]
   (ZipOutputStream. (FileOutputStream. f)))
 
+(defn store-str [#^ZipOutputStream zos ftext]
+  (. zos setMethod ZipOutputStream/STORED)
+  (let [ze    (ZipEntry. (ftext :name))
+        crc   (CRC32.)
+        text  (. (ftext :text) getBytes)
+        count (alength text)]
+    (. ze setSize count)
+    (. crc update text)
+    (. ze setCrc (. crc getValue))
+    (. zos putNextEntry ze)
+    (. zos write text 0 count)
+    (. zos closeEntry)))
+
+
+(defn deflated-str [#^ZipOutputStream zos ftext]
+  (. zos setMethod ZipOutputStream/DEFLATED)
+  (. zos putNextEntry (ZipEntry. (ftext :name)))
+  (let [fis (InputStreamReader. (ByteArrayInputStream. (. (ftext :text) getBytes "UTF-8")) "UTF-8")
+        buf (char-array 1024)]
+    (loop [count (. fis read buf 0 1024)]
+      (if (not (= count -1))
+        (let [s (String. buf 0 count)
+              b (. s getBytes "UTF-8")
+              len (alength b)]
+          (. zos write b 0 len)))
+      (if (= count -1)
+        nil
+        (recur (. fis read buf 0 1024))))
+    (. zos closeEntry)))
+
+
+;;;;
+;; file base
 
 (defn add-store-file [#^ZipOutputStream zos f]
   (. zos setMethod ZipOutputStream/STORED)
   (let [fis (FileInputStream. f)
         ze (ZipEntry. f)
         crc (CRC32.)
-        buf (byte-array 256)
-        count (. fis read buf 0 256)]
+        buf (byte-array 20)
+        count (. fis read buf 0 20)]
     (. ze setSize count)
     (. crc update buf)
     (. ze setCrc (. crc getValue))
@@ -55,26 +91,15 @@
         (recur (. fis read buf 0 1024))))
     (. zos closeEntry)))
 
+
   
-(defn to-zip [f metaf secf]
-  (let [zos (open-zip f)]
+(defn make-zipf [f storef deflatedf textf]
+  (with-open [zos (open-zip f)]
     ; 非圧縮
-;    (add-store-file zos "mimetype")
-    (. zos setMethod ZipOutputStream/STORED)
-    (let [data (. "application/epub+zip" getBytes)
-          ze (ZipEntry. "mimetype")
-          crc (CRC32.)]
-      (. ze setSize (. "application/epub+zip" length))
-      (. crc update data)
-      (. ze setCrc (. crc getValue))
-      (. zos putNextEntry ze)
-      (. zos write data)
-      (. zos closeEntry))
+    (doseq [f storef]
+      (add-store-file zos f))
     ; 圧縮
-    ; metadata
-    (doseq [f metaf]
+    (doseq [f deflatedf]
       (add-deflated-file zos f))
-    ; text data
-    (doseq [f secf]
-      (add-text-file zos f))
-    (. zos close)))
+    (doseq [f textf]
+      (add-text-file zos f))))

@@ -1,7 +1,6 @@
 (ns text2epub.core
   (:gen-class)
-  (:use [text2epub epub]
-        [hiccup.core]))
+  (:use [clj-epub epub]))
 
 
 ; main

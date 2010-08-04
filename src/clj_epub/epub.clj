@@ -1,6 +1,6 @@
 ; make epub metadata
-(ns text2epub.epub
-  (:use [text2epub zipf]
+(ns clj-epub.epub
+  (:use [clj-epub zipf]
         [clojure.contrib.duck-streams :only (reader writer file-str)]
         [hiccup.core]))
 

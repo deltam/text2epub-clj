@@ -1,6 +1,5 @@
 ; zip file output
-
-(ns text2epub.zipf
+(ns clj-epub.zipf
   (:import [java.util.zip ZipEntry ZipOutputStream CRC32]
            [java.io InputStreamReader
                     ByteArrayInputStream

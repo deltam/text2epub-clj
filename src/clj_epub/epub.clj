@@ -88,8 +88,8 @@
 
 (defn gen-epub [epub-name epub-title text-files]
   (let [id       (str (. java.util.UUID randomUUID))
-        htmls    (map #(.replaceAll % "\\.[^.]+$" ".html") text-files)
         sections (map #(.replaceAll % "\\.[^.]+$" "") text-files)
+        htmls    (map #(str % ".html") sections)
         epubinf  {:mimetype (mimetype)
                   :metainf  (make-meta-inf)
                   :opf      (out-content-opf epub-title id htmls sections)

@@ -12,6 +12,9 @@
   [f]
   (ZipOutputStream. (FileOutputStream. f)))
 
+;;;
+; str base
+
 (defn store-str [#^ZipOutputStream zos ftext]
   (. zos setMethod ZipOutputStream/STORED)
   (let [ze    (ZipEntry. (ftext :name))
@@ -91,8 +94,10 @@
     (. zos closeEntry)))
 
 
-  
-(defn make-zipf [f storef deflatedf textf]
+
+(defn make-zipf
+  "generate zip-file. args are collection of filenames."
+  [f storef deflatedf textf]
   (with-open [zos (open-zip f)]
     ; 非圧縮
     (doseq [f storef]

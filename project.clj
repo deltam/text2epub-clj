@@ -1,4 +1,4 @@
-(defproject text2epub-clj "0.0.2-alpha"
+(defproject text2epub-clj "0.0.3-alpha"
   :description "convert plain text into .epub"
   :url "http://github.com/deltam/text2epub-clj"
   :main text2epub.core

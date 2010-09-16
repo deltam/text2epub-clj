@@ -71,7 +71,7 @@
                  ]]))))
 
 (def meta-tag
-     {:chapter "!chapter!"
+     {:chapter "!!"
       :title   "!title!"})
 
 (defn pre-text [filename]

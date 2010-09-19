@@ -1,7 +1,6 @@
 ; make epub metadata
 (ns clj-epub.epub
-  (:use [clj-epub zipf]
-        [clojure.contrib.duck-streams :only (reader writer file-str)]
+  (:use [clojure.contrib.duck-streams :only (reader)]
         [hiccup.core])
   (:import [java.util UUID]))
 
@@ -46,7 +45,7 @@
                    [:itemref {:idref s}])]]))))
 
 
-(defn ncx [id section_titles]
+(defn toc-ncx [id section_titles]
   (ftext "toc.ncx"
          (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               "<!DOCTYPE ncx PUBLIC \"-//NISO//DTD ncx 2005-1//EN\" \"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd\">"
@@ -87,7 +86,7 @@
       (replaceAll "<br>" "<br/>")
       (replaceAll "<img([^>]*)>" "<img$1/>")))
 
-(defn text->epub [title text]
+(defn text->xhtml [title text]
   (str "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
        "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
        (html [:html {:xmlns "http://www.w3.org/1999/xhtml"}
@@ -100,26 +99,17 @@
 
 (defn epub-text [title text]
   (ftext (str title ".html")
-         (text->epub title text)))
+         (text->xhtml title text)))
 
-(defn gen-epub
+(defn text->epub
   "generate ePub file. args are epub filename, epub title of metadata, includes text files."
-  [epub-name epub-title text-files]
+  [{output :output title :title input :input}]
   (let [id       (generate-uuid)
-        ptexts   (first (map #(pre-text %) text-files))
-;        ppp      (prn ptexts)
-        sections (seq (map #(get % :ncx) ptexts))
-;        kkk      (prn sections)
-;        htmls    (map #(str % ".html") sections)
-        epubinf  {:mimetype (mimetype)
-                  :metainf  (meta-inf)
-                  :opf      (content-opf epub-title id sections)
-                  :ncx      (ncx id sections)
-                  :texts    (for [s ptexts]
-                              (epub-text (s :ncx) (s :text)))}]
-    (with-open [zos (open-zip epub-name)]
-      (store-str zos (epubinf :mimetype))
-      (doseq [key [:metainf :opf :ncx]]
-        (deflated-str zos (epubinf key)))
-      (doseq [t (epubinf :texts)]
-        (deflated-str zos t)))))
+        ptexts   (pre-text input)
+        sections (map #(get % :ncx) ptexts)]
+    {:mimetype    (mimetype)
+     :meta-inf    (meta-inf)
+     :content-opf (content-opf title id sections)
+     :toc-ncx     (toc-ncx id sections)
+     :html        (for [s ptexts]
+                    (epub-text (s :ncx) (s :text)))}))

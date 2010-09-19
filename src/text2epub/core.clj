@@ -10,8 +10,8 @@
       (println "Usage: java -jar text2epub-clj-*-standalone.jar output.epub \"epub title\" <textfiles>..")
       (let [epub (text->epub {:output output :title title :input input})]
         (with-open [zos (open-zip output)]
-          (store-str zos (epub :mimetype))
+          (stored zos (:mimetype epub))
           (doseq [key [:meta-inf :content-opf :toc-ncx]]
-            (deflated-str zos (epub key)))
-          (doseq [t (epub :texts)]
-            (deflated-str zos t)))))))
+            (deflated zos (get epub key)))
+          (doseq [t (:html epub)]
+            (deflated zos t)))))))

@@ -22,7 +22,6 @@
                 [:rootfiles
                  [:rootfile {:full-path "content.opf" :media-type "application/oebps-package+xml"}]]]))))
 
-
 (defn content-opf [title id sections]
   (ftext "content.opf"
          (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -44,7 +43,6 @@
                  (for [s sections]
                    [:itemref {:idref s}])]]))))
 
-
 (defn toc-ncx [id section_titles]
   (ftext "toc.ncx"
          (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -64,15 +62,17 @@
                     [:content {:src (str sec ".html")}]])
                  ]]))))
 
+;; NOTE: I seems that the marker separating sections should be same as Markdown
 (def meta-tag
-     {:chapter "!!"
-      :title   "!title!"})
+     {:chapter "^##[^#]"
+      :title   "^#[^#]"})
 
 (defn pre-text [filename]
   "簡単なマークアップで目次を切り分ける"
   (with-open [r (reader filename)]
+    ;; FIXME: this is inefficient
     (let [text (apply str (for [line (line-seq r)] (str line "\n")))]
-      (for [sec (.split text (meta-tag :chapter))]
+      (for [sec (.split text (:chapter meta-tag))]
         (let [ncx  (.. sec (replaceAll "\n.*" "\n") trim)
               text (.. sec (replaceFirst "^[^\n]*\n" ""))]
           {:ncx ncx, :text text})))))

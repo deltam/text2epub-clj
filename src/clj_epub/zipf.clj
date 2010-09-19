@@ -8,18 +8,18 @@
 
 
 (defn open-zip
-  "open ZipOutputStream" 
+  "open ZipOutputStream"
   [f]
   (ZipOutputStream. (FileOutputStream. f)))
 
 ;;;
 ; str base
 
-(defn store-str [#^ZipOutputStream zos ftext]
+(defn store-str [#^ZipOutputStream zos {name :name text :text}]
   (. zos setMethod ZipOutputStream/STORED)
-  (let [ze    (ZipEntry. (ftext :name))
+  (let [ze    (ZipEntry. name)
         crc   (CRC32.)
-        text  (. (ftext :text) getBytes)
+        text  (. text getBytes)
         count (alength text)]
     (. ze setSize count)
     (. crc update text)
@@ -29,10 +29,10 @@
     (. zos closeEntry)))
 
 
-(defn deflated-str [#^ZipOutputStream zos ftext]
+(defn deflated-str [#^ZipOutputStream zos {name :name text :text}]
   (. zos setMethod ZipOutputStream/DEFLATED)
-  (. zos putNextEntry (ZipEntry. (ftext :name)))
-  (let [fis (InputStreamReader. (ByteArrayInputStream. (. (ftext :text) getBytes "UTF-8")) "UTF-8")
+  (. zos putNextEntry (ZipEntry. name))
+  (let [fis (InputStreamReader. (ByteArrayInputStream. (. text getBytes "UTF-8")) "UTF-8")
         buf (char-array 1024)]
     (loop [count (. fis read buf 0 1024)]
       (if (not (= count -1))

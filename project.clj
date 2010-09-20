@@ -5,5 +5,7 @@
   :run-aliases {:convert [text2epub.core -main]}
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [org.clojure/clojure-contrib "1.2.0"]
-                 [hiccup "0.2.6"]]
-  :dev-dependencies [[lein-run "1.0.0-SNAPSHOT"]])
+                 [hiccup "0.2.6"]
+                 [org.markdownj/markdownj "0.3.0-1.0.2b4"]]
+  :dev-dependencies [[lein-run "1.0.0-SNAPSHOT"]]
+  :repositories {"markdownj" "http://scala-tools.org/repo-releases"})

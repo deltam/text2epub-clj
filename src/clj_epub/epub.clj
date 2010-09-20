@@ -1,8 +1,9 @@
 ; make epub metadata
 (ns clj-epub.epub
-  (:use [clojure.contrib.duck-streams :only (reader)]
+  (:use [clojure.contrib.io :only (reader)]
         [hiccup.core])
-  (:import [java.util UUID]))
+  (:import [java.util UUID]
+           [com.petebevin.markdown MarkdownProcessor]))
 
 (defn generate-uuid []
   (str (UUID/randomUUID)))
@@ -22,7 +23,7 @@
                 [:rootfiles
                  [:rootfile {:full-path "content.opf" :media-type "application/oebps-package+xml"}]]]))))
 
-(defn content-opf [title id sections]
+(defn content-opf [title author id sections]
   (ftext "content.opf"
          (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               (html
@@ -33,7 +34,7 @@
                             :xmlns:opf "http://www.idpf.org/2007/opf"}
                  [:dc:title title]
                  [:dc:language "ja"]
-                 [:dc:creator "nobody"]
+                 [:dc:creator author]
                  [:dc:identifier {:id "BookID"} id]]
                 [:manifest
                  [:item {:id "ncx" :href "toc.ncx" :media-type "application/x-dtbncx+xml"}]
@@ -62,29 +63,24 @@
                     [:content {:src (str sec ".html")}]])
                  ]]))))
 
-;; NOTE: I seems that the marker separating sections should be same as Markdown
-(def meta-tag
-     {:chapter "^##[^#]"
-      :title   "^#[^#]"})
-
-(defn pre-text [filename]
-  "簡単なマークアップで目次を切り分ける"
-  (with-open [r (reader filename)]
-    ;; FIXME: this is inefficient
-    (let [text (apply str (for [line (line-seq r)] (str line "\n")))]
-      (for [sec (.split text (:chapter meta-tag))]
-        (let [ncx  (.. sec (replaceAll "\n.*" "\n") trim)
-              text (.. sec (replaceFirst "^[^\n]*\n" ""))]
-          {:ncx ncx, :text text})))))
-;    (for [line (line-seq r)]
-;      (if (re-matches (tag-regex :chapter) line)
-;        ((println "chapter: " line))))))
-
-(defn normalize-text [text]
+(defn- normalize-text [text]
   (.. text
       (replaceAll "([^\n]*)\n" "<p>$1</p>")
       (replaceAll "<br>" "<br/>")
       (replaceAll "<img([^>]*)>" "<img$1/>")))
+
+(defn markdown->html [markdown]
+  (let [mp (MarkdownProcessor.)]
+    (.markdown mp markdown)))
+
+(defn html-sections [title html]
+  (let [prelude (re-find #"(?si)^(.*?)(?=(?:<h\d>|$))" html)
+        sections (for [section (re-seq #"(?si)<h(\d)>(.*?)</h\1>(.*?)(?=(?:<h\d>|\s*$))" html)]
+                   (let [[all level value text] section]
+                     {:ncx value :text text}))]
+    (if prelude
+      (cons {:ncx title :text (get prelude 1)} sections)
+      sections)))
 
 (defn text->xhtml [title text]
   (str "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
@@ -103,13 +99,14 @@
 
 (defn text->epub
   "generate ePub file. args are epub filename, epub title of metadata, includes text files."
-  [{output :output title :title input :input}]
+  [{output :output input :input title :title author :author}]
   (let [id       (generate-uuid)
-        ptexts   (pre-text input)
+        input    (markdown->html (slurp input))
+        ptexts   (html-sections title input)
         sections (map #(get % :ncx) ptexts)]
     {:mimetype    (mimetype)
      :meta-inf    (meta-inf)
-     :content-opf (content-opf title id sections)
+     :content-opf (content-opf title (or author "Nobody") id sections)
      :toc-ncx     (toc-ncx id sections)
      :html        (for [s ptexts]
                     (epub-text (s :ncx) (s :text)))}))

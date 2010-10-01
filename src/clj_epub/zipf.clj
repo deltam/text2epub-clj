@@ -6,45 +6,45 @@
                     FileOutputStream
                     FileInputStream]))
 
-
 (defn open-zip
-  "open ZipOutputStream" 
+  "open ZipOutputStream"
   [f]
   (ZipOutputStream. (FileOutputStream. f)))
 
 ;;;
 ; str base
 
-(defn store-str [#^ZipOutputStream zos ftext]
-  (. zos setMethod ZipOutputStream/STORED)
-  (let [ze    (ZipEntry. (ftext :name))
-        crc   (CRC32.)
-        text  (. (ftext :text) getBytes)
-        count (alength text)]
-    (. ze setSize count)
-    (. crc update text)
-    (. ze setCrc (. crc getValue))
-    (. zos putNextEntry ze)
-    (. zos write text 0 count)
-    (. zos closeEntry)))
+(defn stored [#^ZipOutputStream zos {name :name text :text}]
+  (.setMethod zos ZipOutputStream/STORED)
+  (let [crc   (CRC32.)
+        ze    (ZipEntry. name)
+        bytes  (.getBytes text)
+        count (alength bytes)]
+    (.update crc bytes)
+    (doto ze
+      (.setSize count)
+      (.setCrc (.getValue crc)))
+    (doto zos
+      (.putNextEntry ze)
+      (.write bytes 0 count)
+      (.closeEntry))))
 
+(defn- output-stream [input #^ZipOutputStream output]
+  (let [buf (char-array 1024)]
+    (loop [count (.read input buf 0 1024)]
+      (if (not= count -1)
+        (let [str (String. buf 0 count)
+              bytes (.getBytes str "UTF-8")
+              len (alength bytes)]
+          (.write output bytes 0 len))
+        (recur (.read input buf 0 1024))))))
 
-(defn deflated-str [#^ZipOutputStream zos ftext]
-  (. zos setMethod ZipOutputStream/DEFLATED)
-  (. zos putNextEntry (ZipEntry. (ftext :name)))
-  (let [fis (InputStreamReader. (ByteArrayInputStream. (. (ftext :text) getBytes "UTF-8")) "UTF-8")
-        buf (char-array 1024)]
-    (loop [count (. fis read buf 0 1024)]
-      (if (not (= count -1))
-        (let [s (String. buf 0 count)
-              b (. s getBytes "UTF-8")
-              len (alength b)]
-          (. zos write b 0 len)))
-      (if (= count -1)
-        nil
-        (recur (. fis read buf 0 1024))))
-    (. zos closeEntry)))
-
+(defn deflated [#^ZipOutputStream zos {name :name text :text}]
+  (.setMethod zos ZipOutputStream/DEFLATED)
+  (. zos putNextEntry (ZipEntry. name))
+  (let [fis (InputStreamReader. (ByteArrayInputStream. (.getBytes text "UTF-8")) "UTF-8")]
+    (output-stream fis zos)
+    (.closeEntry zos)))
 
 ;;;;
 ;; file base

@@ -1,24 +1,21 @@
 ; make epub metadata
 (ns clj-epub.epub
-  (:use [clj-epub zipf]
-        [clojure.contrib.duck-streams :only (reader writer file-str)]
-        [hiccup.core]))
+  (:use [clojure.contrib.io :only (reader)]
+        [hiccup.core])
+  (:import [java.util UUID]
+           [com.petebevin.markdown MarkdownProcessor]))
 
-
-(defn- file-write [f str]
-  (with-open [w (writer f)]
-    (.write w str)))
+(defn generate-uuid []
+  (str (UUID/randomUUID)))
 
 (defn- ftext [name text]
   {:name name :text text})
-
 
 (defn mimetype []
   (ftext "mimetype"
          "application/epub+zip"))
 
-
-(defn make-meta-inf []
+(defn meta-inf []
   (ftext "META-INF/container.xml"
          (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               (html
@@ -26,10 +23,7 @@
                 [:rootfiles
                  [:rootfile {:full-path "content.opf" :media-type "application/oebps-package+xml"}]]]))))
 
-
-(defn out-content-opf [title id sections]
-;  (println "opf")
-;  (prn sections)
+(defn content-opf [title author id sections]
   (ftext "content.opf"
          (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               (html
@@ -40,7 +34,7 @@
                             :xmlns:opf "http://www.idpf.org/2007/opf"}
                  [:dc:title title]
                  [:dc:language "ja"]
-                 [:dc:creator "nobody"]
+                 [:dc:creator author]
                  [:dc:identifier {:id "BookID"} id]]
                 [:manifest
                  [:item {:id "ncx" :href "toc.ncx" :media-type "application/x-dtbncx+xml"}]
@@ -50,8 +44,7 @@
                  (for [s sections]
                    [:itemref {:idref s}])]]))))
 
-
-(defn out-ncx [id section_titles]
+(defn toc-ncx [id section_titles]
   (ftext "toc.ncx"
          (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               "<!DOCTYPE ncx PUBLIC \"-//NISO//DTD ncx 2005-1//EN\" \"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd\">"
@@ -70,66 +63,50 @@
                     [:content {:src (str sec ".html")}]])
                  ]]))))
 
-(def meta-tag
-     {:chapter "!!"
-      :title   "!title!"})
+(defn- normalize-text [text]
+  (.. text
+      (replaceAll "([^\n]*)\n" "<p>$1</p>")
+      (replaceAll "<br>" "<br/>")
+      (replaceAll "<img([^>]*)>" "<img$1/>")))
 
-(defn pre-text [filename]
-  "簡単なマークアップで目次を切り分ける"
-  (with-open [r (reader filename)]
-    (let [text (reduce str (for [line (line-seq r)] (str line "\n")))]
-      (for [sec (.split text (meta-tag :chapter))]
-        (let [ncx  (.. sec (replaceAll "\n.*" "\n") trim)
-              text (.. sec (replaceFirst "^[^\n]*\n" ""))]
-          {:ncx ncx, :text text})))))
-;    (for [line (line-seq r)]
-;      (if (re-matches (tag-regex :chapter) line)
-;        ((println "chapter: " line))))))
-         
+(defn markdown->html [markdown]
+  (let [mp (MarkdownProcessor.)]
+    (.markdown mp markdown)))
 
-(defn str-to-epub-text [text_str text_name]
-    (let [filename (str text_name ".html")
-          valid-text (.. text_str
-                         (replaceAll "([^\n]*)\n" "<p>$1</p>")
-                         (replaceAll "<br>" "<br/>")
-                         (replaceAll "<img([^>]*)>" "<img$1/>"))]
-      (ftext filename
-             (str "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
-                "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
-                (html [:html {:xmlns "http://www.w3.org/1999/xhtml"}
-                       [:head
-                        [:title text_name]
-                        [:meta {:http-equiv "Content-Type" :content "application/xhtml+xml; charset=utf-8"}]]
-                       [:body
-                        (str "<p><b>" text_name "</b></p>"
-                             valid-text)
-                        ]])))))
+(defn html-sections [title html]
+  (let [prelude (re-find #"(?si)^(.*?)(?=(?:<h\d>|$))" html)
+        sections (for [section (re-seq #"(?si)<h(\d)>(.*?)</h\1>(.*?)(?=(?:<h\d>|\s*$))" html)]
+                   (let [[all level value text] section]
+                     {:ncx value :text text}))]
+    (if prelude
+      (cons {:ncx title :text (get prelude 1)} sections)
+      sections)))
 
+(defn text->xhtml [title text]
+  (str "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
+       "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
+       (html [:html {:xmlns "http://www.w3.org/1999/xhtml"}
+              [:head
+               [:title title]
+               [:meta {:http-equiv "Content-Type" :content "application/xhtml+xml; charset=utf-8"}]]
+              [:body (str "<p><b>" title "</b></p>"
+                          (normalize-text text))]
+              ])))
 
-(defn to-epub-text [filename text_name]
-  (with-open [r (reader filename)]
-    (let [text (reduce str (for [line (line-seq r)] line))]
-      (str-to-epub-text text text_name))))
+(defn epub-text [title text]
+  (ftext (str title ".html")
+         (text->xhtml title text)))
 
-
-(defn gen-epub
+(defn text->epub
   "generate ePub file. args are epub filename, epub title of metadata, includes text files."
-  [epub-name epub-title text-files]
-  (let [id       (str (. java.util.UUID randomUUID))
-        ptexts   (first (map #(pre-text %) text-files))
-;        ppp      (prn ptexts)
-        sections (seq (map #(get % :ncx) ptexts))
-;        kkk      (prn sections)
-;        htmls    (map #(str % ".html") sections)
-        epubinf  {:mimetype (mimetype)
-                  :metainf  (make-meta-inf)
-                  :opf      (out-content-opf epub-title id sections)
-                  :ncx      (out-ncx id sections)
-                  :texts    (for [s ptexts]
-                              (str-to-epub-text (s :text) (s :ncx)))}]
-    (with-open [zos (open-zip epub-name)]
-      (store-str zos (epubinf :mimetype))
-      (doseq [key [:metainf :opf :ncx]]
-        (deflated-str zos (epubinf key)))
-      (doseq [t (epubinf :texts)]
-        (deflated-str zos t)))))
+  [{output :output input :input title :title author :author}]
+  (let [id       (generate-uuid)
+        input    (markdown->html (slurp input))
+        ptexts   (html-sections title input)
+        sections (map #(get % :ncx) ptexts)]
+    {:mimetype    (mimetype)
+     :meta-inf    (meta-inf)
+     :content-opf (content-opf title (or author "Nobody") id sections)
+     :toc-ncx     (toc-ncx id sections)
+     :html        (for [s ptexts]
+                    (epub-text (s :ncx) (s :text)))}))

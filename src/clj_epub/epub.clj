@@ -116,8 +116,8 @@
   "generate ePub file. args are epub filename, epub title of metadata, includes text files."
   [epub-name epub-title text-files]
   (let [id       (str (. java.util.UUID randomUUID))
-        ptexts   (first (map #(pre-text %) text-files))
-;        ppp      (prn ptexts)
+        ptexts   (flatten (map #(pre-text %) text-files))
+;        ppp      (prn (map first ptexts))
         sections (seq (map #(get % :ncx) ptexts))
 ;        kkk      (prn sections)
 ;        htmls    (map #(str % ".html") sections)

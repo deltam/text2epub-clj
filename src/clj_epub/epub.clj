@@ -1,21 +1,27 @@
-; make epub metadata
 (ns clj-epub.epub
+  "make epub metadata"
   (:use [clojure.contrib.io :only (reader)]
         [hiccup.core])
   (:import [java.util UUID]
            [com.petebevin.markdown MarkdownProcessor]))
 
-(defn generate-uuid []
+(defn- generate-uuid
+  "generate uuid for ePub dc:identifier(BookID)"
+  []
   (str (UUID/randomUUID)))
 
 (defn- ftext [name text]
+  "binding name and text"
   {:name name :text text})
 
 (defn mimetype []
+  "body of mimetype file for ePub format"
   (ftext "mimetype"
          "application/epub+zip"))
 
-(defn meta-inf []
+(defn meta-inf
+  "container.xml for ePub format"
+  []
   (ftext "META-INF/container.xml"
          (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               (html
@@ -23,7 +29,9 @@
                 [:rootfiles
                  [:rootfile {:full-path "content.opf" :media-type "application/oebps-package+xml"}]]]))))
 
-(defn content-opf [title author id sections]
+(defn content-opf
+  "content body & metadata(author, id, ...) on ePub format"
+  [title author id sections]
   (ftext "content.opf"
          (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               (html
@@ -44,7 +52,9 @@
                  (for [s sections]
                    [:itemref {:idref s}])]]))))
 
-(defn toc-ncx [id section_titles]
+(defn toc-ncx
+  "index infomation on ePub format"
+  [id section_titles]
   (ftext "toc.ncx"
          (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               "<!DOCTYPE ncx PUBLIC \"-//NISO//DTD ncx 2005-1//EN\" \"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd\">"
@@ -63,17 +73,23 @@
                     [:content {:src (str sec ".html")}]])
                  ]]))))
 
-(defn- normalize-text [text]
+(defn- normalize-text
+  ""
+  [text]
   (.. text
       (replaceAll "([^\n]*)\n" "<p>$1</p>")
       (replaceAll "<br>" "<br/>")
       (replaceAll "<img([^>]*)>" "<img$1/>")))
 
-(defn markdown->html [markdown]
+(defn markdown->html
+  ""
+  [markdown]
   (let [mp (MarkdownProcessor.)]
     (.markdown mp markdown)))
 
-(defn html-sections [title html]
+(defn html-sections
+  ""
+  [title html]
   (let [prelude (re-find #"(?si)^(.*?)(?=(?:<h\d>|$))" html)
         sections (for [section (re-seq #"(?si)<h(\d)>(.*?)</h\1>(.*?)(?=(?:<h\d>|\s*$))" html)]
                    (let [[all level value text] section]
@@ -82,7 +98,9 @@
       (cons {:ncx title :text (get prelude 1)} sections)
       sections)))
 
-(defn text->xhtml [title text]
+(defn text->xhtml
+  ""
+  [title text]
   (str "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
        "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
        (html [:html {:xmlns "http://www.w3.org/1999/xhtml"}
@@ -93,7 +111,9 @@
                           (normalize-text text))]
               ])))
 
-(defn epub-text [title text]
+(defn epub-text
+  ""
+  [title text]
   (ftext (str title ".html")
          (text->xhtml title text)))
 

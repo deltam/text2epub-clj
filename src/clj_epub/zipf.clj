@@ -1,5 +1,5 @@
-; zip file output
 (ns clj-epub.zipf
+  "zip file output"
   (:import [java.util.zip ZipEntry ZipOutputStream CRC32]
            [java.io InputStreamReader
                     ByteArrayInputStream
@@ -14,7 +14,9 @@
 ;;;
 ; str base
 
-(defn stored [#^ZipOutputStream zos {name :name text :text}]
+(defn stored
+  ""
+  [#^ZipOutputStream zos {name :name text :text}]
   (.setMethod zos ZipOutputStream/STORED)
   (let [crc   (CRC32.)
         ze    (ZipEntry. name)
@@ -29,7 +31,9 @@
       (.write bytes 0 count)
       (.closeEntry))))
 
-(defn- output-stream [input #^ZipOutputStream output]
+(defn- output-stream
+  ""
+  [input #^ZipOutputStream output]
   (let [buf (char-array 1024)]
     (loop [count (.read input buf 0 1024)]
       (if (not= count -1)
@@ -39,7 +43,9 @@
           (.write output bytes 0 len))
         (recur (.read input buf 0 1024))))))
 
-(defn deflated [#^ZipOutputStream zos {name :name text :text}]
+(defn deflated
+  ""
+  [#^ZipOutputStream zos {name :name text :text}]
   (.setMethod zos ZipOutputStream/DEFLATED)
   (. zos putNextEntry (ZipEntry. name))
   (let [fis (InputStreamReader. (ByteArrayInputStream. (.getBytes text "UTF-8")) "UTF-8")]
@@ -49,7 +55,9 @@
 ;;;;
 ;; file base
 
-(defn add-store-file [#^ZipOutputStream zos f]
+(defn add-store-file
+  ""
+  [#^ZipOutputStream zos f]
   (. zos setMethod ZipOutputStream/STORED)
   (let [fis (FileInputStream. f)
         ze (ZipEntry. f)
@@ -64,21 +72,25 @@
     (. zos closeEntry)))
 
 
-(defn add-deflated-file [#^ZipOutputStream zos f]
-    (. zos setMethod ZipOutputStream/DEFLATED)
-    (. zos putNextEntry (ZipEntry. f))
-    (let [fis (FileInputStream. f)
-          buf (byte-array 1024)]
-      (loop [count (. fis read buf 0 1024)]
-        (if (not (= count -1))
-          (. zos write buf 0 count))
-        (if (= count -1)
-          nil
-          (recur (. fis read buf 0 1024))))
-      (. zos closeEntry)))
+(defn add-deflated-file
+  ""
+  [#^ZipOutputStream zos f]
+  (. zos setMethod ZipOutputStream/DEFLATED)
+  (. zos putNextEntry (ZipEntry. f))
+  (let [fis (FileInputStream. f)
+        buf (byte-array 1024)]
+    (loop [count (. fis read buf 0 1024)]
+      (if (not (= count -1))
+        (. zos write buf 0 count))
+      (if (= count -1)
+        nil
+        (recur (. fis read buf 0 1024))))
+    (. zos closeEntry)))
 
 
-(defn add-text-file [#^ZipOutputStream zos f]
+(defn add-text-file
+  ""
+  [#^ZipOutputStream zos f]
   (. zos putNextEntry (ZipEntry. f))
   (let [fis (InputStreamReader. (FileInputStream. f) "UTF-8")
         buf (char-array 1024)]

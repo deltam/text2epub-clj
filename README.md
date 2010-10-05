@@ -40,7 +40,7 @@ ePubの目次ページにはテキストファイル名が表示されます
 * convert plain text into ePub.
 * binding some text files together into ePub
 * ultra-simple markup for plain text and ePub
-** added "!!" on line head, split pages on ePub.
+** added "!!" on line head, split pages on ePub.(e.g. samples/hello.txt)
 
 ## TODO
 

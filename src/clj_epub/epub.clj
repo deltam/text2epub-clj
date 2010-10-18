@@ -5,19 +5,24 @@
   (:import [java.util UUID]
            [com.petebevin.markdown MarkdownProcessor]))
 
+
 (defn- generate-uuid
   "generate uuid for ePub dc:identifier(BookID)"
   []
   (str (UUID/randomUUID)))
 
+
 (defn- ftext [name text]
   "binding name and text"
   {:name name :text text})
 
-(defn mimetype []
+
+(defn mimetype
   "body of mimetype file for ePub format"
+  []
   (ftext "mimetype"
          "application/epub+zip"))
+
 
 (defn meta-inf
   "container.xml for ePub format"
@@ -28,6 +33,7 @@
                [:container {:version "1.0" :xmlns "urn:oasis:names:tc:opendocument:xmlns:container"}
                 [:rootfiles
                  [:rootfile {:full-path "content.opf" :media-type "application/oebps-package+xml"}]]]))))
+
 
 (defn content-opf
   "content body & metadata(author, id, ...) on ePub format"
@@ -52,6 +58,7 @@
                  (for [s sections]
                    [:itemref {:idref s}])]]))))
 
+
 (defn toc-ncx
   "index infomation on ePub format"
   [id section_titles]
@@ -73,22 +80,25 @@
                     [:content {:src (str sec ".html")}]])
                  ]]))))
 
+
 (defn- normalize-text
-  ""
+  "テキストからePub表示に不都合なHTMLタグ、改行を取り除く"
   [text]
   (.. text
       (replaceAll "([^\n]*)\n" "<p>$1</p>")
       (replaceAll "<br>" "<br/>")
       (replaceAll "<img([^>]*)>" "<img$1/>")))
 
+
 (defn markdown->html
-  ""
+  "Markdown記法で書かれたテキストをHTMLに変換し、それを返す"
   [markdown]
   (let [mp (MarkdownProcessor.)]
     (.markdown mp markdown)))
 
+
 (defn html-sections
-  ""
+  "ファイルを開いてePubのページごとに切り分ける"
   [title html]
   (let [prelude (re-find #"(?si)^(.*?)(?=(?:<h\d>|$))" html)
         sections (for [section (re-seq #"(?si)<h(\d)>(.*?)</h\1>(.*?)(?=(?:<h\d>|\s*$))" html)]
@@ -98,8 +108,9 @@
       (cons {:ncx title :text (get prelude 1)} sections)
       sections)))
 
+
 (defn text->xhtml
-  ""
+  "title,textをつなげたXHTMLを返す"
   [title text]
   (str "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
        "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
@@ -111,18 +122,20 @@
                           (normalize-text text))]
               ])))
 
+
 (defn epub-text
-  ""
+  "ePubのページ構成要素を作成し、返す"
   [title text]
   (ftext (str title ".html")
          (text->xhtml title text)))
+
 
 (defn text->epub
   "generate ePub file. args are epub filename, epub title of metadata, includes text files."
   [{output :output input :input title :title author :author}]
   (let [id       (generate-uuid)
         input    (markdown->html (slurp input))
-        ptexts   (html-sections title input)
+        ptexts   (html-sections title input) ; ePub page cut by files
         sections (map #(get % :ncx) ptexts)]
     {:mimetype    (mimetype)
      :meta-inf    (meta-inf)

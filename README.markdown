@@ -16,9 +16,9 @@ ePub created by this tool, checked open it by these ePub readers.
 
 ## Usage
 
-  $ lein deps
-  $ lein uberjar
-  $ java -jar text2epub-clj-standalone.jar "epub_title" <text>..
+    $ lein deps
+    $ lein uberjar
+    $ java -jar text2epub-clj-standalone.jar "epub_title" <text>..
 
 This tool is able to bind some text file together into ePub.
 
@@ -33,6 +33,13 @@ ePubの目次ページにはテキストファイル名が表示されます
 (CAUTION!: all text file should be encoded UTF-8.)
 
 (注意!: すべてのテキストファイルはUTF-8エンコード必須です)
+
+
+## Function
+* convert plain text into ePub.
+* binding some text files together into ePub
+* ultra-simple markup for plain text and ePub
+* added "!!" on line head, split pages on ePub.(e.g. samples/hello.txt)
 
 
 ## TODO

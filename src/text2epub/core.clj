@@ -4,12 +4,24 @@
   (:use [clojure.contrib.string :only (replace-re)]
         [clj-epub io]))
 
+(defn show-help []
+     (println "Usage: java -jar text2epub-clj-*-standalone.jar \"epub title\" <textfiles>.."))
+
 ; main
-; usage: CMD output.epub epub-title <textfile>..
-(defn -main [& args]
-  (let [[title input] args]
-    (if (nil? input)
-      (println "Usage: java -jar text2epub-clj-*-standalone.jar output.epub \"epub title\" <textfiles>..")
-      (let [output (str (replace-re #"\..+$" "" input) ".epub")
-            epub_info {:output output :title title :input input}]
-        (output epub_info)))))
+; usage: CMD epub-title <textfile>..
+(defn -main
+  ([option & args]
+     (if (nil? option)
+       (show-help)
+       ; if-let? 
+       (condp = option
+         "-md" (let [[title files] args]; todo multi file
+                 (if (nil? files)
+                   (show-help)
+                   (let [output (str (replace-re #"\..+$" "" files) ".epub")
+                         epub-info {:output output :title title :input files}]
+                     (info->epub epub-info))))
+         "-pt" (println "plain text mode")
+         "" (show-help))))
+  ([]
+     (show-help)))

@@ -3,7 +3,7 @@
   (:use [clojure.contrib.string :only (replace-re)]
         [clj-epub epub zipf]))
 
-(defn output
+(defn info->epub
   "output ePub file from apply info"
   [info]
   (let [epub (text->epub info)]

@@ -18,7 +18,7 @@ ePub created by this tool, checked open it by these ePub readers.
 
   $ lein deps
   $ lein uberjar
-  $ java -jar text2epub-clj-standalone.jar output.epub "epub_title" <text>..
+  $ java -jar text2epub-clj-standalone.jar "epub_title" <text>..
 
 This tool is able to bind some text file together into ePub.
 
@@ -38,6 +38,7 @@ ePubの目次ページにはテキストファイル名が表示されます
 ## TODO
 
 * writing unit test.
+* added easy-markup to include image files.
 * added easy-markup function (markdown or others)
 
 

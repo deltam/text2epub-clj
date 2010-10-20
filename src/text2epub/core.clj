@@ -4,13 +4,14 @@
   (:use [clojure.contrib.string :only (replace-re)]
         [clj-epub io]))
 
-(defn show-help []
-     (println "Usage: java -jar text2epub-clj-*-standalone.jar \"epub title\" <textfiles>.."
-              "options: -md  markdown"
-              "         -pt  plain text"
-              "         -df  default"))
 
-; 複数ファイルを束ねられるように直す
+(defn show-help []
+     (println "Usage: java -jar text2epub-clj-*-standalone.jar [options] \"epub title\" <textfiles>..\n"
+              "options: -md  markdown\n"
+              "         -pt  plain text\n"
+              "         -df  default\n"))
+
+
 ; main
 ; usage: CMD epub-title <textfile>..
 (defn -main

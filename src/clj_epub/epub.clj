@@ -116,9 +116,9 @@
         sections (for [section (re-seq #"(?si)<h(\d)>(.*?)</h\1>(.*?)(?=(?:<h\d>|\s*$))" html)]
                    (let [[all level value text] section]
                      {:ncx value :text text}))]
-    (if prelude
-      (cons {:ncx title :text (get prelude 1)} sections)
-      sections)))
+;    (if prelude
+;      (cons {:ncx title :text (get prelude 1)} sections)
+      sections))
 
 
 (defn no-slice-text
@@ -126,7 +126,7 @@
   [title text]
   (list {:ncx title :text text}))
 
-
+; 以下、マルチメソッドで切り替える
 ; 修飾記法の切り替え
 (def markup-types
      {:markdown markdown->html
@@ -163,10 +163,10 @@
 
 (defn text->epub
   "generate ePub file. args are epub filename, epub title of metadata, includes text files."
-  [{output :output input :input title :title author :author marktype :markup}]
+  [{output :output input-files :input title :title author :author marktype :markup}]
   (let [id       (generate-uuid)
-        input    ((markup-types marktype) (slurp input))
-        ptexts   ((slice-types marktype)  title input) ; ePub page cut by files
+        mfiles   (map #(ftext % ((markup-types marktype) (slurp %))) input-files) ; todo refactoring
+        ptexts   (flatten (map #((slice-types marktype) (:name %) (:text %)) mfiles)) ; ePub page cut by files
         sections (map #(get % :ncx) ptexts)]
     {:mimetype    (mimetype)
      :meta-inf    (meta-inf)

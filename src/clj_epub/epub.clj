@@ -32,13 +32,13 @@
               (html
                [:container {:version "1.0" :xmlns "urn:oasis:names:tc:opendocument:xmlns:container"}
                 [:rootfiles
-                 [:rootfile {:full-path "content.opf" :media-type "application/oebps-package+xml"}]]]))))
+                 [:rootfile {:full-path "OEBPS/content.opf" :media-type "application/oebps-package+xml"}]]]))))
 
 
 (defn content-opf
   "content body & metadata(author, id, ...) on ePub format"
   [title author id sections]
-  (ftext "content.opf"
+  (ftext "OEBPS/content.opf"
          (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               (html
                [:package {:xmlns "http://www.idpf.org/2007/opf"
@@ -62,7 +62,7 @@
 (defn toc-ncx
   "index infomation on ePub format"
   [id section_titles]
-  (ftext "toc.ncx"
+  (ftext "OEBPS/toc.ncx"
          (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               "<!DOCTYPE ncx PUBLIC \"-//NISO//DTD ncx 2005-1//EN\" \"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd\">"
               (html
@@ -157,7 +157,7 @@
 (defn epub-text
   "ePubのページ構成要素を作成し、返す"
   [title text]
-  (ftext (str title ".html")
+  (ftext (str "OEBPS/" title ".html")
          (text->xhtml title text)))
 
 

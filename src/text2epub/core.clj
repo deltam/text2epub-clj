@@ -13,15 +13,17 @@
   ([option & args]
      (if (nil? option)
        (show-help)
-       ; if-let? 
-       (condp = option
-         "-md" (let [[title files] args]; todo multi file
-                 (if (nil? files)
-                   (show-help)
-                   (let [output (str (replace-re #"\..+$" "" files) ".epub")
-                         epub-info {:output output :title title :input files}]
-                     (info->epub epub-info))))
-         "-pt" (println "plain text mode")
-         "" (show-help))))
+       ; if-let?
+       (let [marktype (condp = option
+                        "-md" :markdown
+                        "-pt" :plain
+                        "-df" :default)]
+         (prn marktype)
+         (let [[title files] args]; todo multi file
+           (if (or (nil? marktype) (nil? files))
+             (show-help)
+             (let [output (str (replace-re #"\..+$" "" files) ".epub")
+                   epub-info {:output output :title title :input files :markup marktype}]
+               (info->epub epub-info)))))))
   ([]
      (show-help)))

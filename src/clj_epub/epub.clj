@@ -74,11 +74,23 @@
                  [:meta {:content "0" :name "dtb:maxPageNumber"}]]
                 [:navMap
                  (for [sec section_titles]
-                   [:navPoint {:id sec :playOrder (str (count (take-while #(not (= sec %)) section_titles)))}; todo
+                   [:navPoint {:id sec :playOrder (str (inc (count (take-while #(not (= sec %)) section_titles))))}; todo
                     [:navLabel
                      [:text sec]]
                     [:content {:src (str sec ".html")}]])
                  ]]))))
+
+(def meta-tag
+     {:chapter "!!"
+      :title   "!title!"})
+
+(defn slice-easy-text
+  "簡単なマークアップで目次を切り分ける"
+  [_ text]
+  (for [sec (.split text (meta-tag :chapter))]
+    (let [ncx  (.. sec (replaceAll "\n.*" "\n") trim)
+          text (.. sec (replaceFirst "^[^\n]*\n" ""))]
+      {:ncx ncx, :text text})))
 
 
 (defn- normalize-text
@@ -97,8 +109,8 @@
     (.markdown mp markdown)))
 
 
-(defn html-sections
-  "ファイルを開いてePubのページごとに切り分ける"
+(defn slice-html
+  "ファイルを開いてePubのページごとに切り分ける(<h1>で切り分ける)"
   [title html]
   (let [prelude (re-find #"(?si)^(.*?)(?=(?:<h\d>|$))" html)
         sections (for [section (re-seq #"(?si)<h(\d)>(.*?)</h\1>(.*?)(?=(?:<h\d>|\s*$))" html)]
@@ -107,6 +119,25 @@
     (if prelude
       (cons {:ncx title :text (get prelude 1)} sections)
       sections)))
+
+
+(defn no-slice-text
+  "プレインテキストをそのまま切り分けず返す "
+  [title text]
+  (list {:ncx title :text text}))
+
+
+; 修飾記法の切り替え
+(def markup-types
+     {:markdown markdown->html
+      :default  (fn [text] text)
+      :plain    (fn [text] text)})
+
+; ePub切り分け方法を切り替える
+(def slice-types
+     {:markdown slice-html
+      :default  slice-easy-text
+      :plain    no-slice-text})
 
 
 (defn text->xhtml
@@ -132,10 +163,10 @@
 
 (defn text->epub
   "generate ePub file. args are epub filename, epub title of metadata, includes text files."
-  [{output :output input :input title :title author :author}]
+  [{output :output input :input title :title author :author marktype :markup}]
   (let [id       (generate-uuid)
-        input    (markdown->html (slurp input))
-        ptexts   (html-sections title input) ; ePub page cut by files
+        input    ((markup-types marktype) (slurp input))
+        ptexts   ((slice-types marktype)  title input) ; ePub page cut by files
         sections (map #(get % :ncx) ptexts)]
     {:mimetype    (mimetype)
      :meta-inf    (meta-inf)

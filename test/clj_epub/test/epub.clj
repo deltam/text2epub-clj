@@ -26,9 +26,9 @@
 
 
 (deftest test-slice-easy-text
-  (is (= (list {:ncx "test" :text "test body"}) (slice-easy-text "" "!!test\ntest body")))
-  (is (= (list {:ncx "test1" :text "body1\nbody2"}
-               {:ncx "test2" :text "body3\nbody4"})
+  (is (= '({:ncx "test" :text "test body"})
+         (slice-easy-text "" "!!test\ntest body")))
+  (is (= '({:ncx "test1" :text "body1\nbody2"} {:ncx "test2" :text "body3\nbody4"})
          (slice-easy-text "" "!!test1\nbody1\nbody2\n!!test2\nbody3\nbody4"))))
 
 (deftest test-normalize-text
@@ -40,4 +40,21 @@
   (is (= "<h1>test</h1>\n" (markdown->html "# test\n"))))
 
 (deftest test-slice-html
-  (is (= "
+  (is (= '({:ncx "title1" :text "text1\n"} {:ncx "title2" :text "text2"})
+         (slice-html "title" "<h1>title1</h1>text1\n<h2>title2</h2>text2"))))
+
+(deftest test-no-slice-text
+  (is (= '({:ncx "title" :text "bodytext"}) (no-slice-text "title" "bodytext"))))
+
+(deftest test-text->xhtml
+  (is (= (str "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
+              "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
+              "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>"
+              "<title>title</title>"
+              "<meta content=\"application/xhtml+xml; charset=utf-8\" http-equiv=\"Content-Type\" /></head>"
+              "<body><p><b>title</b></p>body</body></html>")
+         (text->xhtml "title" "body"))))
+
+;(deftest test-epub-text
+
+;(deftest test-text-epub

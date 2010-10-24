@@ -110,7 +110,7 @@
 
 
 (defn slice-html
-  "ファイルを開いてePubのページごとに切り分ける(<h1>で切り分ける)"
+  "ファイルを開いてePubのページごとに切り分ける(<h*>で切り分ける)"
   [title html]
   (let [prelude (re-find #"(?si)^(.*?)(?=(?:<h\d>|$))" html)
         sections (for [section (re-seq #"(?si)<h(\d)>(.*?)</h\1>(.*?)(?=(?:<h\d>|\s*$))" html)]

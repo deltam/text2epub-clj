@@ -18,7 +18,7 @@ ePub created by this tool, checked open it by these ePub readers.
 
     $ lein deps
     $ lein uberjar
-    $ java -jar text2epub-clj-standalone.jar "epub_title" <text>..
+    $ java -jar text2epub-clj-standalone.jar [options] "epub_title" <text>..
 
 This tool is able to bind some text file together into ePub.
 

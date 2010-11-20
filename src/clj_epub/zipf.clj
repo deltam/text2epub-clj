@@ -43,12 +43,11 @@
   (let [buf (char-array 1024)]
     (loop [count (.read input buf 0 1024)]
       (if (not= count -1)
-        (let [str (String. buf 0 count)
-              bytes (.getBytes str "UTF-8")
-              len (alength bytes)]
-          (.write output bytes 0 len)))
-      (if (not= count -1) ; 前のifとまとめると書き出しがおかしくなる
-        (recur (.read input buf 0 1024))))))
+        ((let [str (String. buf 0 count)
+               bytes (.getBytes str "UTF-8")
+               len (alength bytes)]
+           (.write output bytes 0 len))
+         (recur (.read input buf 0 1024)))))))
 
 (defn deflated
   ""

@@ -39,7 +39,7 @@ ePubの目次ページにはテキストファイル名が表示されます
 * convert plain text into ePub.
 * binding some text files together into ePub
 * ultra-simple markup for plain text and ePub
-* added "!!" on line head, split pages on ePub.(e.g. samples/hello.txt)
+* <s>added "!!" on line head, split pages on ePub.(e.g. samples/hello.txt)</s>
 
 
 ## TODO
@@ -47,6 +47,9 @@ ePubの目次ページにはテキストファイル名が表示されます
 * writing unit test.
 * added easy-markup to include image files.
 * added easy-markup function (markdown or others)
+* added EPUB metadata markup function.
+** "!title!" tag -> EPUB title.
+** "!author!" tag -> EPUB author.
 
 
 ## License

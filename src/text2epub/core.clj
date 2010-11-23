@@ -2,7 +2,9 @@
   "convert plain texts to ePub"
   (:gen-class)
   (:use [clojure.contrib.string :only (replace-re)]
-        [clj-epub epub io]))
+        [clj-epub epub io])
+  (:import [java.lang Exception]
+           [java.io File]))
 
 
 (defn show-help []
@@ -25,12 +27,18 @@
                         "-pt" :plain
                         "-df" :easy-markup)]
          (prn marktype)
-         (let [title (first args)
-               files (drop 1 args)]; todo multi file
-           (prn files)
-           (if (or (nil? marktype) (nil? files))
-             (show-help)
-             (let [output (str (replace-re #"\..+$" "" (first files)) ".epub")
-                   info {:output output :title title :input files :markup marktype}
-                   epub (text->epub info)]
-               (epub->file epub output))))))))
+         (try
+          (let [title (first args)
+                files (drop 1 args)]; todo multi file
+            (prn files)
+            (if (or (nil? marktype) (nil? files))
+              (show-help)
+              (let [name (.getName (File. (first files)))
+                    output (str (replace-re #"\..+$" "" name) ".epub") ; カレントフォルダにEPUBアウトプット
+                    info {:output output :title title :input files :markup marktype}
+                    epub (text->epub info)]
+                (epub->file epub output))))
+          (catch java.lang.Exception e
+            (show-help)
+            (println (.getMessages e))))))))
+

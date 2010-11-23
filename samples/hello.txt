@@ -4,10 +4,12 @@
 !! chapter 1
 this is a pen.
 hello world.
+test!!
 
 !! chap 2
 hello! hello!
 today is sunday
+test!!test
 
 !! end
 eof, eof!

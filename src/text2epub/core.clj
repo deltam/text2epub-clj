@@ -23,7 +23,7 @@
        (let [marktype (condp = option
                         "-md" :markdown
                         "-pt" :plain
-                        "-df" :default)]
+                        "-df" :easy-markup)]
          (prn marktype)
          (let [title (first args)
                files (drop 1 args)]; todo multi file

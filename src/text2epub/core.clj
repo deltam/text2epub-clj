@@ -8,7 +8,7 @@
 
 
 (defn show-help []
-     (println "Usage: java -jar text2epub-clj-*-standalone.jar [options] \"epub title\" <textfiles>..\n"
+     (println "Usage: java -jar text2epub-clj-*-standalone.jar [options] \"epub title\" <textfiles>.."
               "options: -md  markdown\n"
               "         -pt  plain text\n"
               "         -df  default\n"))
@@ -34,11 +34,12 @@
             (if (or (nil? marktype) (nil? files))
               (show-help)
               (let [name (.getName (File. (first files)))
-                    output (str (replace-re #"\..+$" "" name) ".epub") ; カレントフォルダにEPUBアウトプット
-                    info {:output output :title title :input files :markup marktype}
+                    output (str (replace-re #"\..+$" "" name) ".epub") ; output at current directory
+                    info {:title title :input files :markup marktype}
                     epub (text->epub info)]
-                (epub->file epub output))))
+                (epub->file epub output)
+                (println "output: " output))))
           (catch java.lang.Exception e
-            (show-help)
-            (println (.getMessages e))))))))
+            (println (.getMessages e))
+            (show-help)))))))
 

@@ -21,7 +21,7 @@
 ; str base
 
 (defn stored
-  ""
+  "add no deflated text to zip file "
   [#^ZipOutputStream zos {name :name text :text}]
   (.setMethod zos ZipOutputStream/STORED)
   (let [crc   (CRC32.)
@@ -47,11 +47,11 @@
               bytes (.getBytes str "UTF-8")
               len (alength bytes)]
           (.write output bytes 0 len)))
-      (if (not= count -1) ; 前のifとまとめると書き出しがおかしくなる
+      (if (not= count -1) ; 前のifとまとめるとloop-recur syntax error
         (recur (.read input buf 0 1024))))))
 
 (defn deflated
-  ""
+  "add deflated text to zip file"
   [#^ZipOutputStream zos {name :name text :text}]
   (.setMethod zos ZipOutputStream/DEFLATED)
   (.putNextEntry zos (ZipEntry. name))

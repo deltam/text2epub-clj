@@ -77,14 +77,14 @@
 
 (defmethod markup-text :easy-markup
   [easy-type]
-  (let [text (escape-html (:text easy-type))
+  (let [text (:text easy-type)
         html (str "<b>" (:title easy-type) "</b>"
                   (. text replaceAll "([^(<[^>]+>)\n]*)\n" "<p>$1</p>"))]
     {:title (:title easy-type), :text html}))
 
 
 
-;;; プレインテキスト用
+;; プレインテキスト用
 ; プレインテキストをそのまま切り分けず返す
 (defmethod cut-by-chapter :plain
   [plain-type]
@@ -98,8 +98,8 @@
 
 
 
-;;; Markdown記法
-;; ファイルを開いてePubのページごとに切り分ける(<h*>で切り分ける)
+;; Markdown記法
+; ファイルを開いてePubのページごとに切り分ける(<h*>で切り分ける)
 (defmethod cut-by-chapter :markdown
   [md-type]
   (let [html (:text md-type)

@@ -83,8 +83,8 @@
 
 
 (defn text->epub
-  "generate ePub file. args are epub filename, epub title of metadata, includes text files."
-  [{output :output input-files :input title :title author :author marktype :markup}]
+  "generate ePub data. args are epub title of metadata, includes text files."
+  [{input-files :input title :title author :author marktype :markup}]
   (let [id       (generate-uuid)
         eptexts  (files->epub-texts marktype input-files)]
     {:mimetype    (mimetype)

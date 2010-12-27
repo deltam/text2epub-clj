@@ -3,6 +3,7 @@
   (:use [clojure.contrib.io :only (reader)]
         [hiccup.core])
   (:import [java.util UUID]
+           [java.net URLEncoder]
            [com.petebevin.markdown MarkdownProcessor]))
 
 
@@ -53,7 +54,7 @@
                 [:manifest
                  [:item {:id "ncx" :href "toc.ncx" :media-type "application/x-dtbncx+xml"}]
                  (for [s sections]
-                   [:item {:id s :href (str s ".html") :media-type "application/xhtml+xml"}])]
+                   [:item {:id s :href (str (URLEncoder/encode s) ".html") :media-type "application/xhtml+xml"}])]
                 [:spine {:toc "ncx"}
                  (for [s sections]
                    [:itemref {:idref s}])]]))))
@@ -157,7 +158,7 @@
 (defn epub-text
   "ePubのページ構成要素を作成し、返す"
   [title text]
-  (ftext (str "OEBPS/" title ".html")
+  (ftext (str "OEBPS/" (URLEncoder/encode title) ".html")
          (text->xhtml title text)))
 
 

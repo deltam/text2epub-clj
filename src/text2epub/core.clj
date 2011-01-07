@@ -7,36 +7,6 @@
   (:import [java.lang Exception]
            [java.io File]))
 
-(comment
-(defn show-help []
-     (println "Usage: java -jar text2epub-clj-*-standalone.jar [options] \"epub title\" <textfiles>.."
-              "options: -md  markdown\n"
-              "         -pt  plain text\n"
-              "         -df  default\n"))
-)
-
-
-(comment
-(defn -main
-  ([] (-main "--help"))
-  ([& args]
-     (with-command-line args
-       "Usage: java -jar text2epub-clj-*-standalone.jar [-df|-pt|-md] [-t \"epub title\"] <textfiles>.."
-       [[default?  df?  "easy-markup text" true]
-        [plain?    pt?  "plain text"]
-        [markdown? md?  "markdown text"]
-        [title t        "EPUB title" "Untitled"]
-        filenames]
-       (let [marktype (cond
-                       plain?    :plain
-                       markdown? :markdown
-                       default?  :easy-markup
-                       :else     :easy-markup)]
-         (println "marktype " marktype)
-         (println "title " title)
-         (prn filenames)))))
-)
-
 
 ; main
 (defn -main
@@ -44,11 +14,11 @@
   ([& args]
      (with-command-line args
        "text2epub-clj -- Convert plain text to EPUB
-Usage: java -jar text2epub-clj-*-standalone.jar [-df|-pt|-md] [-t \"epub title\"] <textfiles>.."
+Usage: java -jar text2epub-standalone.jar [-df|-pt|-md] [-t \"epub title\"] <textfiles>.."
        [[default?  df?  "easy-markup text" true]
         [plain?    pt?  "plain text"]
         [markdown? md?  "markdown format text"]
-        [title t        "EPUB title" "\"Untitled\""]
+        [title t        "EPUB title" "Untitled"]
         filenames]
        (let [marktype (cond
                        plain?    :plain

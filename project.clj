@@ -9,4 +9,5 @@
                  [org.markdownj/markdownj "0.3.0-1.0.2b4"]]
   :dev-dependencies [[lein-clojars "0.5.0"]
                      [swank-clojure "1.2.1"]]
-  :repositories {"markdownj" "http://scala-tools.org/repo-releases"})
+  :repositories {"markdownj" "http://scala-tools.org/repo-releases"}
+  :uberjar-name "text2epub-standalone.jar")

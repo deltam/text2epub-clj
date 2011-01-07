@@ -42,8 +42,6 @@
   {:ncx  title
    :src  (str (url-encode title) ".html") ; todo
    :name (str "OEBPS/" (url-encode title) ".html")
-;   :src  (str title ".html") ; todo
-;   :name (str "OEBPS/" title ".html")
    :text (text->xhtml title text)})
 
 

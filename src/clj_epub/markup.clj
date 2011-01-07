@@ -1,12 +1,18 @@
 (ns clj-epub.markup
   "make EPUB text from some markuped text"
   (:use [hiccup.core :only (html escape-html)])
-  (:import [com.petebevin.markdown MarkdownProcessor]))
+  (:import [java.net URLEncoder]
+           [com.petebevin.markdown MarkdownProcessor]))
+
+
+(defn- url-encode [s]
+;  (URLEncoder/encode s))
+  s)
 
 
 ; 章立ての切り分け
 (defmulti cut-by-chapter :markup)
-;  各記法による修飾
+; 各記法による修飾
 (defmulti markup-text :markup)
 
 
@@ -34,8 +40,10 @@
   "ePubのページ構成要素を作成し、返す"
   [title text]
   {:ncx  title
-   :src  (str title ".html")
-   :name (str "OEBPS/" title ".html")
+   :src  (str (url-encode title) ".html") ; todo
+   :name (str "OEBPS/" (url-encode title) ".html")
+;   :src  (str title ".html") ; todo
+;   :name (str "OEBPS/" title ".html")
    :text (text->xhtml title text)})
 
 
@@ -61,7 +69,7 @@
 
 ;; EPUB簡易記法
 
-;; 簡易記法タグ
+; 簡易記法タグ
 (def meta-tag
      {:chapter "[\\^\n]!!" ; !!
       :title   "!title!"})
@@ -77,10 +85,10 @@
 
 (defmethod markup-text :easy-markup
   [easy-type]
-  (let [text (:text easy-type)
-        html (str "<b>" (:title easy-type) "</b>"
-                  (. text replaceAll "([^(<[^>]+>)\n]*)\n" "<p>$1</p>"))]
-    {:title (:title easy-type), :text html}))
+  (let [title (:title easy-type)
+        html (str "<b>" title "</b>"
+                  (. (:text easy-type) replaceAll "([^(<[^>]+>)\n]*)\n*" "<p>$1</p>"))]
+    {:title title, :text html}))
 
 
 
@@ -102,9 +110,9 @@
 ; ファイルを開いてePubのページごとに切り分ける(<h*>で切り分ける)
 (defmethod cut-by-chapter :markdown
   [md-type]
-  (let [html (:text md-type)
-        prelude (re-find #"(?si)^(.*?)(?=(?:<h\d>|$))" html)
-        sections (for [section (re-seq #"(?si)<h(\d)>(.*?)</h\1>(.*?)(?=(?:<h\d>|\s*$))" html)]
+  (let [text (:text md-type)
+        prelude (re-find #"(?si)^(.*?)(?=(?:<h\d>|$))" text)
+        sections (for [section (re-seq #"(?si)<h(\d)>(.*?)</h\1>(.*?)(?=(?:<h\d>|\s*$))" text)]
                    (let [[all level value text] section]
                      {:title value :text text}))]
       sections))

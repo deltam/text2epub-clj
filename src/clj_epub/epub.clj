@@ -1,6 +1,7 @@
 (ns clj-epub.epub
   "make epub content & metadata"
-  (:use [hiccup.core]
+  (:use [clojure.contrib.seq :only (find-first indexed)]
+        [hiccup.core]
         [clj-epub.markup])
   (:import [java.util UUID]
            [com.petebevin.markdown MarkdownProcessor]))
@@ -11,6 +12,10 @@
   []
   (str (UUID/randomUUID)))
 
+(defn- find-nth
+  [el coll]
+  (first (find-first #(= el (last %))
+                     (indexed coll))))
 
 (defn- ftext [name text]
   "binding name and text"
@@ -74,12 +79,11 @@
                  [:meta {:content "0" :name "dtb:maxPageNumber"}]]
                 [:navMap
                  (for [sec section_titles]
-                   [:navPoint {:id (:ncx sec) :playOrder (str (inc (count (take-while #(not (= sec %)) section_titles))))}; todo
+                   [:navPoint {:id (:ncx sec) :playOrder (str (inc (find-nth sec section_titles)))}
                     [:navLabel
                      [:text (:ncx sec)]]
                     [:content {:src (:src sec)}]])
                  ]]))))
-
 
 
 (defn text->epub

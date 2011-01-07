@@ -28,22 +28,24 @@
          (cut-by-chapter {:markup :easy-markup :title "" :text "!!test1\nbody1\nbody2\n!!test2\nbody3\nbody4"})))
 
 (deftest test-markup-text-easy-markup
-  (is (= '({:ncx "title1" :text "text1\n"} {:ncx "title2" :text "text2"})
-         (markup-text {:markup :easy-markup :title "title" :text "<h1>title1</h1>text1\n<h2>title2</h2>text2"}))))
+  (is (= {:title "title" :text "<b>title</b><p>test body</p><p>text</p>"}
+         (markup-text {:markup :easy-markup :title "title" :text "test body\ntext"}))))
 
 (deftest test-cut-by-chapter-plain
   (is (= '({:title "test" :text "test body"})
          (cut-by-chapter {:markup :plain :title "test" :text "test body"}))))
 
 (deftest test-markup-text-plain
-  (is (= '({:title "test" :text "<pre>&lt;test body&gt;</pre>"})
+  (is (= {:title "test" :text "<pre>&lt;test body&gt;</pre>"}
          (markup-text {:markup :plain :title "test" :text "<test body>"}))))
 
 (deftest test-cut-by-chapter-markdown
-  (is false))
+  (is (= '({:title "chapter1" :text "# chapter1\n\n* abc\n^n** def\n\n "} {:title "chapter2" :text "# chapter2\n^nEnd"})
+         (cut-by-chapter {:markup :markdown :title "test" :text "# chapter1\n\n* abc\n^n** def\n\n # chapter2\n^nEnd"}))))
 
 (deftest test-markup-text-markdown
-  (is false))
+  (is (= {:title "chapter1" :text "<b>chapter1</b><p>test</p>"}
+         (markup-text {:markup :markdown :title "chapter1" :text "# chapter1\n\ntest"}))))
 
 (deftest test-markdown->html ; todo write more
   (is (= "<h1>test</h1>\n" (markdown->html "# test\n"))))

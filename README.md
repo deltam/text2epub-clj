@@ -51,7 +51,6 @@ ePubの目次ページにはテキストファイル名が表示されます
 ** "!title!" tag -> EPUB title.
 ** "!author!" tag -> EPUB author.
 
-
 ## License
 
 Copyright (c) 2010 deltam (deltam@gmail.com).

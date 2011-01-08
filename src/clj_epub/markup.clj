@@ -46,7 +46,7 @@
 
 
 (defn get-epub-meta
-  "EPUBメタデータが埋めこまれている場合、それを返す"
+  "TODO: EPUBメタデータが埋めこまれている場合、それを返す"
   [markup-type text]
   {:title "" :author ""})
 
@@ -105,15 +105,15 @@
 
 
 ;; Markdown記法
-; ファイルを開いてePubのページごとに切り分ける(<h*>で切り分ける)
+; ファイルを開いて見出しごとに章を切り分ける
 (defmethod cut-by-chapter :markdown
   [md-type]
   (let [text (:text md-type)
-        prelude (re-find #"(?si)^(.*?)(?=(?:<h\d>|$))" text)
-        sections (for [section (re-seq #"(?si)<h(\d)>(.*?)</h\1>(.*?)(?=(?:<h\d>|\s*$))" text)]
-                   (let [[all level value text] section]
-                     {:title value :text text}))]
-      sections))
+        sections (for [section (re-seq #"(?si)#+\s*(.*?)\n(.*?)(?=(?:#+|\s*$))" text)]
+                   (let [[all value body] section]
+                     {:title value :text all}))]
+    sections))
+
 
 (defn markdown->html
   "Markdown記法で書かれたテキストをHTMLに変換し、それを返す"
@@ -123,4 +123,4 @@
 
 (defmethod markup-text :markdown
   [md-type]
-  (markdown->html (:text md-type)))
+  {:title (:title md-type) :text (markdown->html (:text md-type))})

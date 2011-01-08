@@ -13,8 +13,8 @@
   (str (UUID/randomUUID)))
 
 (defn- find-nth
-  [el coll]
-  (first (find-first #(= el (last %))
+  [item coll]
+  (first (find-first #(= item (last %))
                      (indexed coll))))
 
 (defn- ftext [name text]
@@ -81,7 +81,7 @@
                  (for [sec section_titles]
                    [:navPoint {:id (:ncx sec) :playOrder (str (inc (find-nth sec section_titles)))}
                     [:navLabel
-                     [:text (:ncx sec)]]
+                     [:text (:label sec)]]
                     [:content {:src (:src sec)}]])
                  ]]))))
 

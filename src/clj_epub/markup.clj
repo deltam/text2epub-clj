@@ -5,6 +5,7 @@
            [com.petebevin.markdown MarkdownProcessor]))
 
 
+;TODO Markdown記法、日本語セクション名でエラーあり。調査中
 (defn- url-encode [s]
 ;  (URLEncoder/encode s))
   s)
@@ -39,8 +40,9 @@
 (defn epub-text
   "ePubのページ構成要素を作成し、返す"
   [title text]
-  {:ncx  title
-   :src  (str (url-encode title) ".html") ; todo
+  {:label title
+   :ncx  (url-encode title)
+   :src  (str (url-encode title) ".html")
    :name (str "OEBPS/" (url-encode title) ".html")
    :text (text->xhtml title text)})
 

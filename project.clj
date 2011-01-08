@@ -1,4 +1,4 @@
-(defproject text2epub-clj "0.0.4-alpha"
+(defproject text2epub-clj "0.0.5-alpha"
   :description "convert plain text into .epub"
   :url "http://github.com/deltam/text2epub-clj"
   :main text2epub.core
@@ -9,5 +9,4 @@
                  [org.markdownj/markdownj "0.3.0-1.0.2b4"]]
   :dev-dependencies [[lein-clojars "0.5.0"]
                      [swank-clojure "1.2.1"]]
-  :repositories {"markdownj" "http://scala-tools.org/repo-releases"}
-  :uberjar-name "text2epub-standalone.jar")
+  :repositories {"markdownj" "http://scala-tools.org/repo-releases"})

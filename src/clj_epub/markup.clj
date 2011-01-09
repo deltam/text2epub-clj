@@ -1,6 +1,7 @@
 (ns clj-epub.markup
   "make EPUB text from some markuped text"
-  (:use [hiccup.core :only (html escape-html)])
+  (:use [hiccup.core :only (html escape-html)]
+        [hiccup.page-helpers :only (doctype xml-declaration)])
   (:import [java.net URLEncoder]
            [com.petebevin.markdown MarkdownProcessor]))
 
@@ -28,13 +29,14 @@
 (defn text->xhtml
   "title,textをつなげたXHTMLを返す"
   [title text]
-  (str "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
-       "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
-       (html [:html {:xmlns "http://www.w3.org/1999/xhtml"}
-              [:head
-               [:title title]
-               [:meta {:http-equiv "Content-Type" :content "application/xhtml+xml; charset=utf-8"}]]
-              [:body (normalize-text text)]])))
+  (html
+   (xml-declaration "UTF-8")
+   (doctype :xhtml-transitional)
+   [:html {:xmlns "http://www.w3.org/1999/xhtml"}
+    [:head
+     [:title title]
+     [:meta {:http-equiv "Content-Type" :content "application/xhtml+xml; charset=utf-8"}]]
+    [:body (normalize-text text)]]))
 
 
 (defn epub-text

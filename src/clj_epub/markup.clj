@@ -75,13 +75,8 @@
   [{title :title text :text}]
   (let [sections (for [section (re-seq #"(?si)!!\s*(.*?)\n(.*?)(?=(?:!!|\s*$))" text)]
                    (let [[all value body] section]
-                     {:title value :text all}))]
+                     {:title value :text body}))]
     sections))
-
-;  (for [chap (. text split (:chapter meta-tag))]
-;    (let [chap-title (.. chap (replaceAll "\n.*" "\n") trim)
-;          chap-text  (. chap (replaceFirst "^[^\n]*\n" ""))]  ; cut ncx string
-;      {:title chap-title, :text chap-text})))
 
 (defmethod markup-text :easy-markup
   [{title :title text :text}]

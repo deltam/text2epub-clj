@@ -5,12 +5,6 @@
            [com.petebevin.markdown MarkdownProcessor]))
 
 
-;TODO Markdown記法、日本語セクション名でエラーあり。調査中
-(defn- url-encode [s]
-;  (URLEncoder/encode s))
-  s)
-
-
 ; 章立ての切り分け
 (defmulti cut-by-chapter :markup)
 ; 各記法による修飾
@@ -38,12 +32,12 @@
 
 
 (defn epub-text
-  "ePubのページ構成要素を作成し、返す"
-  [title text]
+  "EPUBのページ構成要素を作成し、返す"
+  [id title text]
   {:label title
-   :ncx  (url-encode title)
-   :src  (str (url-encode title) ".html")
-   :name (str "OEBPS/" (url-encode title) ".html")
+   :ncx  id
+   :src  (str id ".html")
+   :name (str "OEBPS/" id ".html")
    :text (text->xhtml title text)})
 
 
@@ -56,14 +50,14 @@
 (defn files->epub-texts
   "ファイルの内容をEPUB用HTMLに変換して返す"
   [markup-type filenames]
-  (let [chapters (flatten
+  (let [snippets (flatten
                   (map #(cut-by-chapter {:markup markup-type :title % :text (slurp %)})
                        filenames))
         markups (flatten
                  (map #(markup-text {:markup markup-type :title (:title %) :text (:text %)})
-                      chapters))]
-    (for [t markups]
-      (epub-text (:title t) (:text t)))))
+                      snippets))]
+    (map-indexed (fn [index chapter] (epub-text (str "chapter-" index) (:title chapter) (:text chapter)))
+                   markups)))
 
 
 

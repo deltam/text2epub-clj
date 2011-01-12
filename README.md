@@ -2,12 +2,12 @@
 
 Convert plain text into .epub, wriiten on Clojure.
 
-プレインテキストをePubに変換するツールをClojureで書いてみた。
+プレインテキストをEPUBに変換するツールをClojureで書いてみた。
 
 
-ePub created by this tool, checked open it by these ePub readers.
+EPUB file created by this tool, checked open it by these EPUB readers.
 
-このツールで作成したepubは、これらのePubリーダーで開けることをチェックしています。
+このツールで作成したEPUBファイルは、これらのEPUBリーダーで開けることをチェックしています。
 
     iBooks 
 
@@ -18,16 +18,23 @@ ePub created by this tool, checked open it by these ePub readers.
 
     $ lein deps
     $ lein uberjar
-    $ java -jar text2epub-clj-standalone.jar [options] "epub_title" <text>..
+    $ java -jar text2epub-clj-standalone.jar --help
+    Usage: java -jar text2epub-standalone.jar [-df|-pt|-md] [-t "epub title"] <textfiles>..
+    Options
+      --default, --df    easy-markup text      [default true]
+      --plain, --pt      plain text
+      --markdown, --md   markdown format text
+      --title, -t <arg>  EPUB title            [default Untitled]
 
-This tool is able to bind some text file together into ePub.
 
-このツールでは複数のテキストファイルをePubにまとめることが出来ます。
+This tool is able to bind some text file together into EPUB.
+
+このツールでは複数のテキストファイルをEPUBにまとめることが出来ます。
 
 
-ePub's index page are viewed list of text file names.
+EPUB's index page are viewed list of text file names.
 
-ePubの目次ページにはテキストファイル名が表示されます
+EPUBの目次ページにはテキストファイル名が表示されます
 
 
 (CAUTION!: all text file should be encoded UTF-8.)
@@ -36,10 +43,10 @@ ePubの目次ページにはテキストファイル名が表示されます
 
 
 ## Function
-* convert plain text into ePub.
-* binding some text files together into ePub
-* ultra-simple markup for plain text and ePub
-* <s>added "!!" on line head, split pages on ePub.(e.g. samples/hello.txt)</s>
+* convert plain text into EPUB.
+* binding some text files together into EPUB
+* ultra-simple markup for plain text and EPUB
+* <s>added "!!" on line head, split pages on EPUB.(e.g. samples/hello.txt)</s>
 
 
 ## TODO

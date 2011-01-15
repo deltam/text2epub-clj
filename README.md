@@ -19,12 +19,13 @@ EPUB file created by this tool, checked open it by these EPUB readers.
     $ lein deps
     $ lein uberjar
     $ java -jar text2epub-clj-standalone.jar --help
-    Usage: java -jar text2epub-standalone.jar [-df|-pt|-md] [-t "epub title"] <textfiles>..
+    Usage: java -jar text2epub-standalone.jar [-df|-pt|-md] [-t "epub title"] [-sb] <textfiles>..
     Options
-      --default, --df    easy-markup text      [default true]
+      --default, --df    easy-markup text                                                     [default true]
       --plain, --pt      plain text
       --markdown, --md   markdown format text
-      --title, -t <arg>  EPUB title            [default Untitled]
+      --title, -t <arg>  EPUB title                                                           [default Untitled]
+      --standby, --sb    run as standby-mode(output EPUB repeatedly when modify input files)
 
 
 This tool is able to bind some text file together into EPUB.
@@ -43,6 +44,7 @@ EPUBの目次ページにはテキストファイル名が表示されます
 
 
 ## Function
+
 * convert plain text into EPUB.
 * binding some text files together into EPUB
 * ultra-simple markup for plain text and EPUB
@@ -55,8 +57,8 @@ EPUBの目次ページにはテキストファイル名が表示されます
 * added easy-markup to include image files.
 * added easy-markup function (markdown or others)
 * added EPUB metadata markup function.
-** "!title!" tag -> EPUB title.
-** "!author!" tag -> EPUB author.
+*  "!title!" tag -> EPUB title.
+*  "!author!" tag -> EPUB author.
 
 ## License
 

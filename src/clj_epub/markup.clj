@@ -99,13 +99,6 @@
 
 
 ;; Markdown記法
-; ファイルを開いて見出しごとに章を切り分ける
-(defmethod cut-by-chapter :markdown
-  [{title :title text :text}]
-  (let [sections (for [section (re-seq #"(?si)#+\s*(.*?)\n(.*?)(?=(?:#+|\s*$))" text)]
-                   (let [[all value body] section]
-                     {:title value :text all}))]
-    sections))
 
 (defn markdown->html
   "Markdown記法で書かれたテキストをHTMLに変換し、それを返す"
@@ -113,6 +106,16 @@
   (let [mp (MarkdownProcessor.)]
     (.markdown mp markdown)))
 
+; HTMLに変換してから章ごとに切り分け
+(defmethod cut-by-chapter :markdown
+  [{title :title text :text}]
+  (let [html (markdown->html text)
+        sections (for [section (re-seq #"(?si)<h(\d)>(.*?)</h\1>(.*?)(?=(?:<h\d>|\s*$))" html)]
+                   (let [[all level value body] section]
+                     {:title value :text all}))]
+    sections))
+
+; なにもしない
 (defmethod markup-text :markdown
   [{title :title text :text}]
-  {:title title, :text (markdown->html text)})
+  {:title title, :text text})
